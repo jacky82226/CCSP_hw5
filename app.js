@@ -10,11 +10,11 @@ var flash = require('connect-flash');
 var mongoose = require('mongoose');
 var passport = require('passport');
 
-// require('./config/db'); // TODO [DB] : Connect to database
+require('./config/db'); // TODO [DB] : Connect to database
 // require('./config/passport'); // TODO [FB] : Passport configuration
 
 var app = express();
-// var Vote = mongoose.model('Vote'); // TODO [DB] : Get Vote model
+var Vote = mongoose.model('Vote'); // TODO [DB] : Get Vote model
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -94,20 +94,30 @@ app.get('/result', function(req, res){
   */
 
   //
-  // var vote = new Vote({vote: vote, fbid: fbid});
-  // vote.save(function(err, newVote){
-  //   if( err ){
-  //     req.flash('info', "你已經投過票囉！");
-  //     return res.redirect('/');
-  //   }
+   var vote = new Vote({vote: vote, fbid: fbid});
+   vote.save(function(err, newVote){
+     if( err ){
+       req.flash('info', "你已經投過票囉！");
+       return res.redirect('/');
+     }
   //
   //   ... ...
   //
-       res.render('result', {
-         votes: [18.1, 12.5, 42.44445, 21.3, 1.3, 2.5, 1.85555] // Percentages
-       });
+      Vote.find(function(err,votes){
+        if(err){
+          console.error(err);
+          res.json({error:err.name},500);
+        };
+        var count=[0,0,0,0,0,0,0];
+        for(var g=0;g<votes.length;++g)
+          ++count[votes[g].vote];
+         res.render('result', {
+           votes: [count[0]*100/votes.length, count[1]*100/votes.length, count[2]*100/votes.length, count[3]*100/votes.length, count[4]*100/votes.length, count[5]*100/votes.length, count[6]*100/votes.length] // Percentages
+         });
+
+      });
   //
-  // });
+   });
 
 });
 
